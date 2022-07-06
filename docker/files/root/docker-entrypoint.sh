@@ -47,10 +47,6 @@ if [[ $(id -u) = 0 ]]; then
   groupmod -o -g "$PGID" factorio
   # Take ownership of factorio data if running as root
   chown -R factorio:factorio "$FACTORIO_VOL"
-  # Drop to the factorio user
-  SU_EXEC="runuser -u factorio -g factorio --"
-else
-  SU_EXEC=""
 fi
 
 sed -i '/write-data=/c\write-data=\/factorio/' /opt/factorio/config/config.ini
@@ -69,7 +65,7 @@ if [[ $GENERATE_NEW_SAVE == true ]]; then
     if [[ -f "$SAVES/$SAVE_NAME.zip" ]]; then
         echo "Map $SAVES/$SAVE_NAME.zip already exists, skipping map generation"
     else
-        $SU_EXEC /opt/factorio/bin/x64/factorio \
+        /cli-handler.py /opt/factorio/bin/x64/factorio \
             --create "$SAVES/$SAVE_NAME.zip" \
             --map-gen-settings "$CONFIG/map-gen-settings.json" \
             --map-settings "$CONFIG/map-settings.json"
@@ -95,4 +91,4 @@ else
 fi
 
 # shellcheck disable=SC2086
-exec $SU_EXEC /opt/factorio/bin/x64/factorio "${FLAGS[@]}" "$@"
+exec /cli-handler.py /opt/factorio/bin/x64/factorio "${FLAGS[@]}" "$@"

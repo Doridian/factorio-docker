@@ -4,12 +4,16 @@ from datetime import datetime
 from hashlib import sha1
 from os import rename, scandir, unlink
 from os.path import exists
-from sys import argv
+from sys import argv, stderr
 from urllib.parse import quote as url_quote, urlencode
 from requests import get
 from json import loads as json_loads
 from dateutil import parser as dateutil_parser
 
+def myprint(text):
+    stderr.write(text)
+    stderr.write("\n")
+    stderr.flush()
 
 class FactorioVersion():
     version: list[int]
@@ -179,7 +183,7 @@ class FactorioMod():
                 continue
             if name == release.file_name:
                 continue
-            print(f"Uninstall mod release: {dirent.name}")
+            myprint(f"Uninstall mod release: {dirent.name}")
             unlink(dirent.path)
 
     def install_release(self, release: FactorioModRelease) -> None:
@@ -223,27 +227,27 @@ def cleanup():
         name = dirent.name
         if name[0] == "." or name[-4:] != ".tmp":
             continue
-        print(f"Cleanup temp file: {dirent.name}")
+        myprint(f"Cleanup temp file: {dirent.name}")
         unlink(dirent.path)
 
 
 def check_mod(mod: FactorioMod):
-    print("")
-    print(f"Checking {mod.name}...")
+    myprint("")
+    myprint(f"Checking {mod.name}...")
     
     mod.fetch_info()
     release = mod.get_latest_version_for(FACTORIO_VERSION)
     
     if mod.is_release_installed(release):
-        print(f"    Mod {mod.name} up to date at {release.version}!")
+        myprint(f"    Mod {mod.name} up to date at {release.version}!")
     else:
-        print(f"    Updating mod {mod.name} to {release.version}")
+        myprint(f"    Updating mod {mod.name} to {release.version}")
         mod.install_release(release)
         mod.uninstall_all_except(release)
 
 
 def main():
-    print("Loading mod-list.json")
+    myprint("Loading mod-list.json")
     all_mods = []
     with open(f"{MOD_DIR}/mod-list.json") as f:
         mods_info = json_loads(f.read())["mods"]
@@ -255,11 +259,11 @@ def main():
 
     cleanup()
 
-    print("Checking all mod updates...")
+    myprint("Checking all mod updates...")
     for mod in all_mods:
         check_mod(mod)
-    print("")
-    print("Update check complete")
+    myprint("")
+    myprint("Update check complete")
 
     cleanup()
 
