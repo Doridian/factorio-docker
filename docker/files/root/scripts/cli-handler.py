@@ -9,6 +9,11 @@ from queue import Queue
 from time import sleep
 from re import search
 from signal import signal, SIGHUP, SIGTERM, SIGINT
+from traceback import print_exc
+from handlers.base import ConsoleLineHandler, ChatHandler, ChatPlayer
+from handlers.autopause import AutoPauseHandler
+from handlers.chat_commands import ChatCommandHandler
+from handlers.commands.saves import LoadSaveCommand, ListSavesCommand
 
 class AsynchronousFileReader(Thread):
     def __init__(self, fd):
@@ -43,21 +48,24 @@ def suexec():
     write_stderr(" Done!\n")
 
 class FactorioGame:
-    def __init__(self, args, pause_during_join, cmdin=None):
+    args: list[str]
+    process: Popen
+    console_line_handlers: list[ConsoleLineHandler]
+    chat_handlers: list[ChatHandler]
+
+    def __init__(self, args, cmdin=None):
         self.args = args
         self.cmdin = cmdin
-        self.pause_during_join = pause_during_join
         self.process = None
-        self.peers = {}
-        self.paused_states = set(["Ready", "ConnectedWaitingForMap", "ConnectedDownloadingMap", "ConnectedLoadingMap", "TryingToCatchUp", "WaitingForCommandToStartSendingTickClosures"])
-        self.is_paused = False
-
-    def send_lua(self, command):
-        self.send_console(f"/sc {command}\n")
+        self.console_line_handlers = []
+        self.chat_handlers = []
 
     def send_console(self, line):
-        self.process.stdin.write(line)
+        self.process.stdin.write(f"{line.strip()}\n")
         self.process.stdin.flush()
+
+    def write_stderr(self, text):
+        write_stderr(text)
 
     def stop(self):
         if self.process is not None:
@@ -100,90 +108,45 @@ class FactorioGame:
         self.process.wait()
         self.process = None
 
-    def handle_autopause(self):
-        should_pause = False
-        for peer_id, state in self.peers.items():
-            if state in self.paused_states:
-                should_pause = True
-                break
-
-        if should_pause == self.is_paused:
-            return
-
-        write_stderr(f"Setting game pause to {should_pause}\n")
-
-        if should_pause:
-            self.send_lua("game.tick_paused = true; game.print(\"Pausing game for joining player\")")
-        else:
-            self.send_lua("game.tick_paused = false; game.print(\"Unpausing game as join finished\")")
-
-        self.is_paused = should_pause
-
-    def handle_add_peer(self, line):
-        m = search("adding peer *\\((\\d+)\\)", line)
-        if not m:
-            return
-        peer_id = m[1]
-        self.peers[peer_id] = "Ready"
-
-    def handle_state_changed(self, line):
-        m = search("received stateChanged peerID *\\((\\d+)\\) oldState *\\(([^()]+)\\) newState *\\(([^()]+)\\)", line)
-        if not m:
-            return
-        peer_id = m[1]
-        new_state = m[3]
-        self.peers[peer_id] = new_state
-
-    def handle_remove_peer(self, line):
-        m = search("removing peer *\\((\\d+)\\)", line)
-        if not m:
-            return
-        peer_id = m[1]
-        if peer_id in self.peers:
-            self.peers.pop(peer_id)
-
-    def handle_system_line(self, line):
-        if not self.pause_during_join:
-            return
-
-        if "received stateChanged" in line:
-            self.handle_state_changed(line)
-        elif "adding peer" in line:
-            self.handle_add_peer(line)
-        elif "removing peer" in line:
-            self.handle_remove_peer(line)
-        else:
-            return
-        
-        self.handle_autopause()
-
-    def handle_chat_command(self, player_name, command):
-        pass
-
     def handle_chat_line(self, line):
-        m = search("[CHAT] (\w+): .*$")
+        m = search("\\[CHAT\\] ([^:]+): (.*)$", line)
         if not m:
             return
+
         player_name = m[1]
         message = m[2].strip()
-        if message[0] == "!":
-            self.handle_chat_command(player_name, message[1:])
+        
+        for handler in self.chat_handlers:
+            handler.handle_chat(ChatPlayer.get_by_name(self, player_name), message)
 
     def handle_line(self, line, stream):
         stream.write(line)
         stream.flush()
 
-        if "[CHAT]" in line:
-            self.handle_chat_line(line)
-        else:
-            self.handle_system_line(line)
+        try:
+            if "[CHAT]" in line:
+                self.handle_chat_line(line)
+                return
+
+            for handler in self.console_line_handlers:
+                handler.handle_line(line)
+        except Exception:
+            print_exc()
 
 def main():
     pause_env_var = getenv("PAUSE_DURING_JOIN", "false").lower()
     pause_during_join = len(pause_env_var) > 0 and pause_env_var != "false"
 
     suexec()
-    game = FactorioGame(args=argv[1:], pause_during_join=pause_during_join, cmdin=stdin)
+    game = FactorioGame(args=argv[1:], cmdin=stdin)
+
+    if pause_during_join:
+        game.console_line_handlers.append(AutoPauseHandler(game))
+
+    command_handler = ChatCommandHandler(game)
+    command_handler.register_command(LoadSaveCommand())
+    command_handler.register_command(ListSavesCommand())
+    game.chat_handlers.append(command_handler)
     
     should_run = True
     def sighandler_exit(signum, frame):

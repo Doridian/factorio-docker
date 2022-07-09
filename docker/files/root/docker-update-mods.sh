@@ -25,4 +25,4 @@ if [[ -z ${TOKEN:-} ]]; then
   echo "You need to provide your Factorio token to update mods."
 fi
 
-./update-mods.py "$VERSION" "$MODS" "$USERNAME" "$TOKEN"
+/scripts/update-mods.py "$VERSION" "$MODS" "$USERNAME" "$TOKEN"
