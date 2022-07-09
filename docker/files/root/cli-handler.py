@@ -11,12 +11,6 @@ from re import search
 from signal import signal, SIGHUP, SIGTERM, SIGINT
 
 class AsynchronousFileReader(Thread):
-    '''
-    Helper class to implement asynchronous reading of a file
-    in a separate thread. Pushes read lines on a queue to
-    be consumed in another thread.
-    '''
-
     def __init__(self, fd):
         assert callable(fd.readline)
         Thread.__init__(self, daemon=True)
@@ -24,12 +18,10 @@ class AsynchronousFileReader(Thread):
         self.queue = Queue()
 
     def run(self):
-        '''The body of the tread: read lines and put them on the queue.'''
-        for line in iter(self._fd.readline, ''):
+        for line in iter(self._fd.readline, ""):
             self.queue.put(line)
 
     def eof(self):
-        '''Check whether there is no more content to expect.'''
         return not self.is_alive() and self.queue.empty()
 
 def write_stderr(text):
@@ -85,12 +77,10 @@ class FactorioGame:
             cmdin_reader.start()
 
         while not stdout_reader.eof() or not stderr_reader.eof():
-            # Show what we received from standard output.
             while not stdout_reader.queue.empty():
                 line = stdout_reader.queue.get()
                 self.handle_line(line, stdout)
 
-            # Show what we received from standard error.
             while not stderr_reader.queue.empty():
                 line = stderr_reader.queue.get()
                 self.handle_line(line, stderr)
@@ -98,15 +88,12 @@ class FactorioGame:
             while cmdin_reader is not None and not cmdin_reader.queue.empty():
                 self.send_console(cmdin_reader.queue.get())
 
-            # Sleep a bit before asking the readers again.
             sleep(.1)
 
-        # Close subprocess' file descriptors.
         self.process.stdout.close()
         self.process.stderr.close()
         self.process.stdin.close()
 
-        # Let's be tidy and join the threads we've started.
         stdout_reader.join()
         stderr_reader.join()
 
@@ -155,23 +142,32 @@ class FactorioGame:
         if peer_id in self.peers:
             self.peers.pop(peer_id)
 
+    def handle_system_line(self, line):
+        if not self.pause_during_join:
+            return
+
+        if "received stateChanged" in line:
+            self.handle_state_changed(line)
+        elif "adding peer" in line:
+            self.handle_add_peer(line)
+        elif "removing peer" in line:
+            self.handle_remove_peer(line)
+        else:
+            return
+        
+        self.handle_autopause()
+
+    def handle_chat_line(self, line):
+        pass
+
     def handle_line(self, line, stream):
         stream.write(line)
         stream.flush()
 
-        if not self.pause_during_join:
-            return
-
-        if 'received stateChanged' in line:
-            self.handle_state_changed(line)
-        elif 'adding peer' in line:
-            self.handle_add_peer(line)
-        elif 'removing peer' in line:
-            self.handle_remove_peer(line)
+        if "[CHAT]" in line:
+            self.handle_chat_line(line)
         else:
-            return
-
-        self.handle_autopause()
+            self.handle_system_line(line)
 
 def main():
     pause_env_var = getenv("PAUSE_DURING_JOIN", "false").lower()
