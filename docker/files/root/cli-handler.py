@@ -157,8 +157,17 @@ class FactorioGame:
         
         self.handle_autopause()
 
-    def handle_chat_line(self, line):
+    def handle_chat_command(self, player_name, command):
         pass
+
+    def handle_chat_line(self, line):
+        m = search("[CHAT] (\w+): .*$")
+        if not m:
+            return
+        player_name = m[1]
+        message = m[2].strip()
+        if message[0] == "!":
+            self.handle_chat_command(player_name, message[1:])
 
     def handle_line(self, line, stream):
         stream.write(line)
