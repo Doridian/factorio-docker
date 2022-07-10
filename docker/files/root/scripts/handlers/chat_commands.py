@@ -1,3 +1,4 @@
+from traceback import print_exc
 from .base import ChatHandler, ChatPlayer
 from .commands.base import ChatCommand
 
@@ -25,4 +26,8 @@ class ChatCommandHandler(ChatHandler):
         cmd = self.commands[cmd_name]
         args = args[1:]
 
-        cmd.run(player, args)
+        try:
+            cmd.run(player, args)
+        except Exception as e:
+            player.send_message(f"Error during command: {e}")
+            print_exc()

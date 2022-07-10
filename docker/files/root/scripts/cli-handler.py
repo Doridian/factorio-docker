@@ -71,6 +71,10 @@ class FactorioGame:
         if self.process is not None:
             self.process.send_signal(SIGINT)
 
+    def wait(self):
+        if self.process is not None:
+            self.process.wait()
+
     def run(self):
         self.process = Popen(self.args, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8")
 

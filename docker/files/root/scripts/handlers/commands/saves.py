@@ -1,10 +1,12 @@
 from dataclasses import dataclass
-import re
-from xmlrpc.client import DateTime
 from .base import ChatCommand
 from handlers.base import ChatPlayer
-from os import getenv, scandir
+from os import getenv, lstat, scandir, stat_result, utime, execv, rename
 from datetime import datetime, timezone
+from os.path import join
+from shutil import copyfile
+from threading import Thread
+from sys import argv
 
 SAVE_DIR = getenv("SAVES")
 
@@ -46,6 +48,20 @@ class SaveGameInfo():
     name: str
     mtime: datetime
     size: int
+    path: str
+    stat: stat_result
+
+def savegame_info_from_file(name: str) -> SaveGameInfo:
+    path_name = join(SAVE_DIR, name)
+    stat = lstat(path_name)
+    return SaveGameInfo(
+        name=name,
+        mtime=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
+        size=stat.st_size,
+        stat=stat,
+        path=path_name,
+    )
+
 
 class ListSavesCommand(ChatCommand):
     def run(self, player: ChatPlayer, args: list[str]):
@@ -59,12 +75,7 @@ class ListSavesCommand(ChatCommand):
             if not dirent.is_file():
                 continue
 
-            stat = dirent.stat()
-            savegames.append(SaveGameInfo(
-                name=dirent.name,
-                mtime=datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc),
-                size=stat.st_size,
-            ))
+            savegames.append(savegame_info_from_file(dirent.name))
 
         savegames.sort(key=lambda sg : sg.mtime, reverse=True)
 
@@ -76,9 +87,36 @@ class ListSavesCommand(ChatCommand):
     def names(self) -> list[str]:
         return ["savelist"]
 
+class LoadSaveThread(Thread):
+    def __init__(self, player: ChatPlayer, savegame: SaveGameInfo) -> None:
+        super().__init__()
+        self.name = "Savegame Loader Thread"
+        self.player = player
+        self.savegame = savegame
+
+    def run(self):
+        tmp_filename = join(SAVE_DIR, f"saveload_{int(datetime.now().timestamp())}.tmp")
+        zip_filename = f"{tmp_filename}.zip"
+
+        self.player.send_message(f"Copying save to {zip_filename}...")
+        copyfile(self.savegame.path, tmp_filename)
+        self.player.send_message("Save copied! Stopping server and reloading...")
+        
+        self.player.game.stop()
+        self.player.game.wait()
+
+        rename(tmp_filename, zip_filename)
+        utime(zip_filename)
+
+        execv(argv[0], argv)
+
 class LoadSaveCommand(ChatCommand):
     def run(self, player: ChatPlayer, args: list[str]):
-        player.send_message("Load")
+        sg_name = args[0]
+        savegame = savegame_info_from_file(sg_name)
+
+        thread = LoadSaveThread(player, savegame)
+        thread.start()
 
     def names(self) -> list[str]:
         return ["saveload"]
