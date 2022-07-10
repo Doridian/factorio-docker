@@ -19,7 +19,7 @@ class ChatCommandHandler(ChatHandler):
         args = message[1:].split(" ")
         cmd_name = args[0].lower()
         if cmd_name not in self.commands:
-            player.game.send_console(f"Unknown command: {cmd_name}")
+            player.send_message(f"Unknown command: {cmd_name}")
             return
 
         cmd = self.commands[cmd_name]

@@ -13,6 +13,9 @@ class ChatPlayer():
         self.name = name
         self.game = game
 
+    def send_message(self, message: str):
+        self.game.send_console(message)
+
     @staticmethod
     def get_by_name(game, name: str):
         return ChatPlayer(game, name)

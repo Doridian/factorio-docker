@@ -71,14 +71,14 @@ class ListSavesCommand(ChatCommand):
         now_time = datetime.now(tz=timezone.utc)
 
         for sg in savegames:
-            player.game.send_console(f"{sg.name} @ {format_relative_date(sg.mtime, now_time)} ({format_file_size(sg.size)})")
+            player.send_message(f"{sg.name} @ {format_relative_date(sg.mtime, now_time)} ({format_file_size(sg.size)})")
 
     def names(self) -> list[str]:
         return ["savelist"]
 
 class LoadSaveCommand(ChatCommand):
     def run(self, player: ChatPlayer, args: list[str]):
-        player.game.send_console("Load")
+        player.send_message("Load")
 
     def names(self) -> list[str]:
         return ["saveload"]
