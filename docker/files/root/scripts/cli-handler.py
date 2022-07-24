@@ -10,6 +10,7 @@ from time import sleep
 from re import search
 from signal import signal, SIGHUP, SIGTERM, SIGINT
 from traceback import print_exc
+from docker.files.root.scripts.handlers.commands.restart import RestartCommand
 from handlers.base import ConsoleLineHandler, ChatHandler, ChatPlayer
 from handlers.autopause import AutoPauseHandler
 from handlers.chat_commands import ChatCommandHandler
@@ -159,6 +160,7 @@ def main():
     command_handler = ChatCommandHandler(game)
     command_handler.register_command(LoadSaveCommand())
     command_handler.register_command(ListSavesCommand())
+    command_handler.register_command(RestartCommand())
     game.chat_handlers.append(command_handler)
     
     should_run = True
