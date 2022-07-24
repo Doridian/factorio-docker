@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 from .base import ChatCommand
 from handlers.base import ChatPlayer
-from os import getenv, lstat, scandir, stat_result, utime, execv, rename
+from os import getenv, lstat, scandir, stat_result, utime, rename
 from datetime import datetime, timezone
 from os.path import join
 from shutil import copyfile
 from threading import Thread
-from sys import argv
 
 SAVE_DIR = getenv("SAVES")
 
@@ -108,7 +107,7 @@ class LoadSaveThread(Thread):
         rename(tmp_filename, zip_filename)
         utime(zip_filename)
 
-        execv(argv[0], argv)
+        self.player.game.restart()
 
 class LoadSaveCommand(ChatCommand):
     def run(self, player: ChatPlayer, args: list[str]):

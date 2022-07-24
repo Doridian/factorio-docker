@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from sys import stderr, stdout, stdin, argv
-from os import setresgid, setresuid, getuid, getenv
+from os import setresgid, setresuid, getuid, getenv, execv
 from pwd import getpwnam
 from subprocess import Popen, PIPE
 from threading import Thread
@@ -53,12 +53,13 @@ class FactorioGame:
     console_line_handlers: list[ConsoleLineHandler]
     chat_handlers: list[ChatHandler]
 
-    def __init__(self, args, cmdin=None):
+    def __init__(self, args, restart_handler=None, cmdin=None):
         self.args = args
         self.cmdin = cmdin
         self.process = None
         self.console_line_handlers = []
         self.chat_handlers = []
+        self.restart_handler = restart_handler
 
     def send_console(self, line):
         self.process.stdin.write(f"{line.strip()}\n")
@@ -74,6 +75,11 @@ class FactorioGame:
     def wait(self):
         if self.process is not None:
             self.process.wait()
+
+    def restart(self):
+        self.stop()
+        self.wait()
+        self.restart_handler(self)
 
     def run(self):
         self.process = Popen(self.args, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8")
@@ -137,12 +143,15 @@ class FactorioGame:
         except Exception:
             print_exc()
 
+def cli_restart_handler(game):
+    execv(argv[0], argv)
+
 def main():
     pause_env_var = getenv("PAUSE_DURING_JOIN", "false").lower()
     pause_during_join = len(pause_env_var) > 0 and pause_env_var != "false"
 
     suexec()
-    game = FactorioGame(args=argv[1:], cmdin=stdin)
+    game = FactorioGame(args=argv[1:], restart_handler=cli_restart_handler, cmdin=stdin)
 
     if pause_during_join:
         game.console_line_handlers.append(AutoPauseHandler(game))
