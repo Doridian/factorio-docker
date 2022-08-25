@@ -2,6 +2,7 @@ from traceback import print_exc
 from .base import ChatHandler, ChatPlayer
 from .commands.base import ChatCommand
 
+
 class ChatCommandHandler(ChatHandler):
     commands: list[ChatCommand]
 

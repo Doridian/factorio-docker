@@ -10,11 +10,13 @@ from time import sleep
 from re import search
 from signal import signal, SIGHUP, SIGTERM, SIGINT
 from traceback import print_exc
+from docker.files.root.scripts.handlers.commands.restart import StopCommand
 from handlers.base import ConsoleLineHandler, ChatHandler, ChatPlayer
 from handlers.autopause import AutoPauseHandler
 from handlers.chat_commands import ChatCommandHandler
 from handlers.commands.saves import LoadSaveCommand, ListSavesCommand
 from handlers.commands.restart import RestartCommand
+
 
 class AsynchronousFileReader(Thread):
     def __init__(self, fd):
@@ -30,9 +32,11 @@ class AsynchronousFileReader(Thread):
     def eof(self):
         return not self.is_alive() and self.queue.empty()
 
+
 def write_stderr(text):
     stderr.write(text)
     stderr.flush()
+
 
 def suexec():
     write_stderr("Switching users...")
@@ -47,6 +51,7 @@ def suexec():
     setresgid(gid, gid, gid)
     setresuid(uid, uid, uid)
     write_stderr(" Done!\n")
+
 
 class FactorioGame:
     args: list[str]
@@ -83,7 +88,8 @@ class FactorioGame:
         self.restart_handler(self)
 
     def run(self):
-        self.process = Popen(self.args, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding="utf-8")
+        self.process = Popen(self.args, stdin=PIPE,
+                             stdout=PIPE, stderr=PIPE, encoding="utf-8")
 
         stdout_reader = AsynchronousFileReader(self.process.stdout)
         stdout_reader.start()
@@ -126,9 +132,10 @@ class FactorioGame:
 
         player_name = m[1]
         message = m[2].strip()
-        
+
         for handler in self.chat_handlers:
-            handler.handle_chat(ChatPlayer.get_by_name(self, player_name), message)
+            handler.handle_chat(ChatPlayer.get_by_name(
+                self, player_name), message)
 
     def handle_line(self, line, stream):
         stream.write(line)
@@ -144,15 +151,18 @@ class FactorioGame:
         except Exception:
             print_exc()
 
+
 def cli_restart_handler(game):
     execv(argv[0], argv)
+
 
 def main():
     pause_env_var = getenv("PAUSE_DURING_JOIN", "false").lower()
     pause_during_join = len(pause_env_var) > 0 and pause_env_var != "false"
 
     suexec()
-    game = FactorioGame(args=argv[1:], restart_handler=cli_restart_handler, cmdin=stdin)
+    game = FactorioGame(
+        args=argv[1:], restart_handler=cli_restart_handler, cmdin=stdin)
 
     if pause_during_join:
         game.console_line_handlers.append(AutoPauseHandler(game))
@@ -161,9 +171,11 @@ def main():
     command_handler.register_command(LoadSaveCommand())
     command_handler.register_command(ListSavesCommand())
     command_handler.register_command(RestartCommand())
+    command_handler.register_command(StopCommand())
     game.chat_handlers.append(command_handler)
-    
+
     should_run = True
+
     def sighandler_exit(signum, frame):
         nonlocal should_run
         should_run = False
@@ -175,6 +187,7 @@ def main():
 
     if should_run:
         game.run()
+
 
 if __name__ == "__main__":
     main()

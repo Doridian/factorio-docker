@@ -1,12 +1,14 @@
 from .base import ConsoleLineHandler
 from re import search
 
+
 class AutoPauseHandler(ConsoleLineHandler):
     def __init__(self, game):
         super().__init__(game)
         self.peers = {}
         self.is_paused = False
-        self.paused_states = set(["Ready", "ConnectedWaitingForMap", "ConnectedDownloadingMap", "ConnectedLoadingMap", "TryingToCatchUp", "WaitingForCommandToStartSendingTickClosures"])
+        self.paused_states = set(["Ready", "ConnectedWaitingForMap", "ConnectedDownloadingMap",
+                                 "ConnectedLoadingMap", "TryingToCatchUp", "WaitingForCommandToStartSendingTickClosures"])
 
     def handle_line(self, line: str):
         if "received stateChanged" in line:
@@ -17,7 +19,7 @@ class AutoPauseHandler(ConsoleLineHandler):
             self.handle_remove_peer(line)
         else:
             return
-        
+
         self.handle_autopause()
 
     def handle_autopause(self):
@@ -49,7 +51,8 @@ class AutoPauseHandler(ConsoleLineHandler):
         self.peers[peer_id] = "Ready"
 
     def handle_state_changed(self, line):
-        m = search("received stateChanged peerID *\\((\\d+)\\) oldState *\\(([^()]+)\\) newState *\\(([^()]+)\\)", line)
+        m = search(
+            "received stateChanged peerID *\\((\\d+)\\) oldState *\\(([^()]+)\\) newState *\\(([^()]+)\\)", line)
         if not m:
             return
         peer_id = m[1]

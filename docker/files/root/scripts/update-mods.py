@@ -10,10 +10,12 @@ from requests import get
 from json import loads as json_loads
 from dateutil import parser as dateutil_parser
 
+
 def myprint(text):
     stderr.write(text)
     stderr.write("\n")
     stderr.flush()
+
 
 class FactorioVersion():
     version: list[int]
@@ -220,6 +222,7 @@ TOKEN = argv[4]
 
 MOD_BASE_URL = "https://mods.factorio.com"
 
+
 def cleanup():
     for dirent in scandir(MOD_DIR):
         if not dirent.is_file():
@@ -234,10 +237,10 @@ def cleanup():
 def check_mod(mod: FactorioMod):
     myprint("")
     myprint(f"Checking {mod.name}...")
-    
+
     mod.fetch_info()
     release = mod.get_latest_version_for(FACTORIO_VERSION)
-    
+
     if mod.is_release_installed(release):
         myprint(f"    Mod {mod.name} up to date at {release.version}!")
     else:

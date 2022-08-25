@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class ConsoleLineHandler(ABC):
     def __init__(self, game):
         self.game = game
@@ -7,6 +8,7 @@ class ConsoleLineHandler(ABC):
     @abstractmethod
     def handle_line(self, line: str):
         pass
+
 
 class ChatPlayer():
     def __init__(self, game, name: str):
@@ -19,6 +21,7 @@ class ChatPlayer():
     @staticmethod
     def get_by_name(game, name: str):
         return ChatPlayer(game, name)
+
 
 class ChatHandler(ABC):
     def __init__(self, game):
