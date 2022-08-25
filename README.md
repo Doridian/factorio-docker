@@ -3,7 +3,8 @@
 [中文](./README_zh_CN.md)
 
 <!-- start autogeneration tags -->
-* `1.1.61`, `1`, `1.1`, `latest`, `stable`
+* `1.1.68`, `1`, `1.1`, `latest`
+* `1.1.61`, `stable`
 * `1.0.0`, `1.0`
 * `0.17.79`, `0.17`
 * `0.16.51`, `0.16`
@@ -94,7 +95,7 @@ docker attach factorio
 
 Before upgrading backup the save. It's easy to make a save in the client.
 
-Ensure `-v` was used to run the server so the save is outside of the Docker container. The `docker rm` command completely destroys the container, which includes the save if it isn't stored in an data volume.
+Ensure `-v` was used to run the server so the save is outside of the Docker container. The `docker rm` command completely destroys the container, which includes the save if it isn't stored in a data volume.
 
 Delete the container and refresh the image:
 
