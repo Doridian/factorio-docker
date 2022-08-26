@@ -10,12 +10,11 @@ from time import sleep
 from re import search
 from signal import signal, SIGHUP, SIGTERM, SIGINT
 from traceback import print_exc
-from docker.files.root.scripts.handlers.commands.restart import StopCommand
 from handlers.base import ConsoleLineHandler, ChatHandler, ChatPlayer
 from handlers.autopause import AutoPauseHandler
 from handlers.chat_commands import ChatCommandHandler
 from handlers.commands.saves import LoadSaveCommand, ListSavesCommand
-from handlers.commands.restart import RestartCommand
+from handlers.commands.restart import RestartCommand, StopCommand
 
 
 class AsynchronousFileReader(Thread):
