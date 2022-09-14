@@ -66,7 +66,7 @@ if [[ $GENERATE_NEW_SAVE == true ]]; then
     if [[ -f "$SAVES/$SAVE_NAME.zip" ]]; then
         echo "Map $SAVES/$SAVE_NAME.zip already exists, skipping map generation"
     else
-        /scripts/cli-handler.py /opt/factorio/bin/x64/factorio \
+        /scripts/cli_handler.py /opt/factorio/bin/x64/factorio \
             --create "$SAVES/$SAVE_NAME.zip" \
             --map-gen-settings "$CONFIG/map-gen-settings.json" \
             --map-settings "$CONFIG/map-settings.json"
@@ -96,4 +96,4 @@ else
 fi
 
 # shellcheck disable=SC2086
-exec /scripts/cli-handler.py /opt/factorio/bin/x64/factorio "${FLAGS[@]}" "$@"
+exec /scripts/cli_handler.py /opt/factorio/bin/x64/factorio "${FLAGS[@]}" "$@"
