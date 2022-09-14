@@ -22,13 +22,13 @@ if [[ -n ${GITHUB_BASE_REF:-} ]]; then
   TAGS="-t $DOCKER_REPO:$GITHUB_BASE_REF"
 else
   if [[ -n ${CI:-} ]]; then
-    # we are either on master or on a tag build
-    if [[ ${BRANCH:-} == master || ${BRANCH:-} == "$VERSION" ]]; then
+    # we are either on main or on a tag build
+    if [[ ${BRANCH:-} == main || ${BRANCH:-} == "$VERSION" ]]; then
       TAGS="-t $DOCKER_REPO:$VERSION -t $DOCKER_REPO:$VERSION_SHORT"
     # we are on an incremental build of a tag
     elif [[ $VERSION == "${BRANCH%-*}" ]]; then
       TAGS="-t $DOCKER_REPO:$BRANCH -t $DOCKER_REPO:$VERSION -t $DOCKER_REPO:$VERSION_SHORT"
-    # we build a other branch than master and exclude dependabot branches from tags cause the / is not supported by docker
+    # we build a other branch than main and exclude dependabot branches from tags cause the / is not supported by docker
     elif [[ -n ${BRANCH:-} && ! $BRANCH =~ "/" ]]; then
       TAGS="-t $DOCKER_REPO:$BRANCH"
     fi
@@ -74,8 +74,8 @@ if [[ $VERSION == "${BRANCH_VERSION:-}" && ${GITHUB_BASE_REF:-} == "" ]] ||
     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   fi
 
-  # push a tag on a branch other than master except dependabot branches cause docker does not support /
-  if [[ -n ${BRANCH:-} && $VERSION != "${BRANCH_VERSION:-}" && ${BRANCH:-} != "master" && ! ${BRANCH:-} =~ "/" ]]; then
+  # push a tag on a branch other than main except dependabot branches cause docker does not support /
+  if [[ -n ${BRANCH:-} && $VERSION != "${BRANCH_VERSION:-}" && ${BRANCH:-} != "main" && ! ${BRANCH:-} =~ "/" ]]; then
     docker push "$DOCKER_REPO:$BRANCH"
   fi
 
