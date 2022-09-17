@@ -2,7 +2,7 @@ name: "Factorio version check"
 
 on:
   schedule:
-    - cron: '* * * * *'
+    - cron: '42 * * * *'
   push:
     branches:
       - factorio-auto-up
