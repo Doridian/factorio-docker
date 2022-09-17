@@ -60,7 +60,7 @@ with open(LOCAL_BUILDINFO, "w") as fh:
     fh.write(current_buildinfo)
 
 check_call(["git", "add", "buildinfo.json"])
-check_call(["git", "commit", "-m", "Automated buildinfo.json update"])
+check_call(["git", "commit", "-m", "Update Factorio version(s)"])
 
 print("buildinfo.json updated")
 print("::set-output name=docker::true")
