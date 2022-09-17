@@ -2,7 +2,7 @@ name: "Factorio version check"
 
 on:
   schedule:
-    - cron: '30 * * * *'
+    - cron: '* * * * *'
   push:
     branches:
       - factorio-auto-up
@@ -21,3 +21,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - run: ./.github/factorio_version.py
+        id: pyscript
+    outputs:
+      docker: ${{steps.pyscript.outputs.docker}}
+  build:
+    needs: [versioncheck]
+    uses: ./.github/workflows/docker_push.yml
+    if: ${{ needs.versioncheck.outputs.docker == "true" }}
