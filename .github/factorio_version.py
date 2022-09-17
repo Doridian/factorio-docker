@@ -61,7 +61,6 @@ with open(LOCAL_BUILDINFO, "w") as fh:
 
 check_call(["git", "add", "buildinfo.json"])
 check_call(["git", "commit", "-m", "Automated buildinfo.json update"])
-check_call(["git", "push"])
 
 print("buildinfo.json updated")
 print("::set-output name=docker::true")

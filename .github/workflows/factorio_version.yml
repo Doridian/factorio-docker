@@ -34,3 +34,5 @@ jobs:
         run: |
           ./build.py --push-tags
         if: ${{ steps.pyscript.outputs.docker == 'true' }}
+      - run: git push
+        if: ${{ steps.pyscript.outputs.docker == 'true' }}
