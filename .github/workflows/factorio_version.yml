@@ -1,0 +1,23 @@
+name: "Factorio version check"
+
+on:
+  push:
+    breanches:
+    - factorio-auto-up
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    - name: Add mask for secrets
+      run: |
+        echo "::add-mask::${{ secrets.FACTORIO_USERNAME }}"
+        echo "::add-mask::${{ secrets.FACTORIO_PASSWORD }}"
+    - name: Checkout
+      uses: actions/checkout@v2
+    - run: ./.github/factorio_version.py
+      env:
+        FACTORIO_USERNAME: ${{ secrets.FACTORIO_USERNAME }}
+        FACTORIO_PASSWORD: ${{ secrets.FACTORIO_PASSWORD }}
