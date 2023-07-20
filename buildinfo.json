@@ -1,9 +1,15 @@
 {
+    "1.1.88": {
+        "sha256": "7547170834b24f775a6efedb64dd3fef5fb63998aaa7f4d9890bb449b70f0c4c",
+        "tags": [
+            "1.1.88",
+            "latest"
+        ]
+    },
     "1.1.87": {
         "sha256": "60b3884b6dad1f4c7b30b7ef2b63619ff4a3204ac7fd894cf09d382b349857cc",
         "tags": [
             "1.1.87",
-            "latest",
             "stable"
         ]
     }
