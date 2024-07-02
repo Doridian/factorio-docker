@@ -3,13 +3,7 @@
         "sha256": "105a38533c916fe66e2fb2b9fe8f93c116568047a20c4daa74632072c077bf3f",
         "tags": [
             "1.1.109",
-            "latest"
-        ]
-    },
-    "1.1.107": {
-        "sha256": "5cf3821464c447d342b8859e7af710c33066b909ee7a4fc3efa92f9dbe0dba81",
-        "tags": [
-            "1.1.107",
+            "latest",
             "stable"
         ]
     }
