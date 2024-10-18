@@ -15,8 +15,13 @@ with get(LATEST_VERSION_URL) as req:
     req.raise_for_status()
     latest_versions = loads(req.text)
 
-LATEST_VERSION_LATEST = latest_versions["experimental"]["headless"]
-LATEST_VERSION_STABLE = latest_versions["stable"]["headless"]
+VERSION_LATEST = latest_versions["experimental"]["headless"]
+VERSION_STABLE = latest_versions["stable"]["headless"]
+VERSIONS_BUILDINFO = set([
+    VERSION_LATEST,
+    VERSION_STABLE,
+    "1.1.110",
+])
 
 def version_to_url(version):
     return f"https://www.factorio.com/get-download/{version}/headless/linux64"
@@ -33,9 +38,9 @@ def version_to_buildinfo(version):
         info_sha256 = h.hexdigest()
 
     tags = [version]
-    if version == LATEST_VERSION_LATEST:
+    if version == VERSION_LATEST:
         tags.append("latest")
-    if version == LATEST_VERSION_STABLE:
+    if version == VERSION_STABLE:
         tags.append("stable")
 
     return {
@@ -45,9 +50,8 @@ def version_to_buildinfo(version):
 
 target_buildinfo = {}
 
-target_buildinfo[LATEST_VERSION_LATEST] = version_to_buildinfo(LATEST_VERSION_LATEST)
-if LATEST_VERSION_LATEST != LATEST_VERSION_STABLE:
-    target_buildinfo[LATEST_VERSION_STABLE] = version_to_buildinfo(LATEST_VERSION_STABLE)
+for version in VERSIONS_BUILDINFO:
+    target_buildinfo[version] = version_to_buildinfo(version)
 
 if target_buildinfo == current_buildinfo:
     print("buildinfo.json already up to date")
