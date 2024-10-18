@@ -57,9 +57,16 @@ class FactorioVersion():
         return self._compare(other) <= 0
 
 
-INVERTED_CONSTRAINTS = {"<": ">=", "<=": ">",
-                        "=": "!=", "!=": "=", ">=": "<", ">": "<="}
-
+INVERTED_CONSTRAINTS = {
+    "<": ">=",
+    "<=": ">",
+    ">=": "<",
+    ">": "<=",
+    "=": "!=",
+    "!=": "=",
+    "^": "!^",
+    "!^": "^",
+}
 
 class FactorioVersionConstraint():
     constraint: str
@@ -90,6 +97,8 @@ class FactorioVersionConstraint():
             return version > self.version
         elif self.constraint == "^":
             return version.is_similar(self.version)
+        elif self.constraint == "!^":
+            return not version.is_similar(self.version)
 
         raise ValueError(f"Unknown constraint: {self.constraint}")
 
