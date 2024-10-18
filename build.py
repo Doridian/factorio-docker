@@ -22,7 +22,7 @@ def build_dockerfile(sha256, version, tags):
 
 def pull_docker_tags(tags):
     for tag in tags:
-        subprocess.check_call(["docker", "pull" f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
+        subprocess.check_call(["docker", "pull", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
 
 def main(push_tags=False):
     with open(os.path.join(os.path.dirname(__file__), "buildinfo.json")) as file_handle:
