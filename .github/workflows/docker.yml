@@ -16,6 +16,18 @@ jobs:
           access_token: ${{ github.token }}
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Update Docker version
+        env:
+            DOCKER_CLI_EXPERIMENTAL: enabled
+        uses: crazy-max/ghaction-setup-docker@v3
+        with:
+            channel: stable
+            daemon-config: |
+                {
+                  "features": {
+                    "containerd-snapshotter": true
+                  }
+                }
       - name: build
         run: |
           ./build.py

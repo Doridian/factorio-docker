@@ -11,16 +11,18 @@ def build_dockerfile(sha256, version, tags):
     build_dir = tempfile.mktemp()
     shutil.copytree("docker", build_dir)
 
-    build_command = ["docker", "build", "--build-arg", f"VERSION={version}",
+    build_command = ["docker", "build",
+                     "--cache-from", "type=gha", "--cache-to", "type=gha",
+                     "--build-arg", f"VERSION={version}",
                      "--build-arg", f"SHA256={sha256}", "."]
     for tag in tags:
         build_command.extend(["-t", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
-    try:
-        subprocess.run(build_command, cwd=build_dir, check=True)
-    except subprocess.CalledProcessError:
-        print("Build of image failed")
-        exit(1)
 
+    subprocess.check_call(build_command, cwd=build_dir)
+
+def pull_docker_tags(tags):
+    for tag in tags:
+        subprocess.check_call(["docker", "pull" f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
 
 def main(push_tags=False):
     with open(os.path.join(os.path.dirname(__file__), "buildinfo.json")) as file_handle:
@@ -29,6 +31,7 @@ def main(push_tags=False):
     for version, buildinfo in builddata.items():
         sha256 = buildinfo["sha256"]
         tags = buildinfo["tags"]
+        pull_docker_tags(tags)
         build_dockerfile(sha256, version, tags)
         if not push_tags:
             continue
