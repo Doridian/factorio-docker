@@ -30,8 +30,10 @@ class FactorioVersion():
             return 0
         return self.version[i]
 
-    def _compare(self, other) -> int:
-        for i in range(max(len(self.version), len(other.version))):
+    def _compare(self, other, compare_segs: int = 0) -> int:
+        if compare_segs <= 0:
+            compare_segs = max(len(self.version), len(other.version))
+        for i in range(compare_segs):
             selfVersion = self._version_at(i)
             otherVersion = other._version_at(i)
             if selfVersion == otherVersion:
@@ -41,6 +43,9 @@ class FactorioVersion():
             else:
                 return 1
         return 0
+
+    def is_similar(self, other) -> bool:
+        return self._compare(other, 2) == 0
 
     def __eq__(self, other) -> bool:
         return self._compare(other) == 0
@@ -83,6 +88,8 @@ class FactorioVersionConstraint():
             return version >= self.version
         elif self.constraint == ">":
             return version > self.version
+        elif self.constraint == "^":
+            return version.is_similar(self.version)
 
         raise ValueError(f"Unknown constraint: {self.constraint}")
 
@@ -99,8 +106,10 @@ class FactorioModRelease():
         self.url = raw["download_url"]
         self.file_name = raw["file_name"]
 
+        info_json = raw["info_json"]
+
         self.factorio_version_constraints = []
-        for dep in raw["info_json"]["dependencies"]:
+        for dep in info_json["dependencies"]:
             dep_split = dep.split(" ")
             invert = False
             if dep_split[0] == "!":
@@ -117,6 +126,11 @@ class FactorioModRelease():
 
             self.factorio_version_constraints.append(FactorioVersionConstraint(
                 dep_split[1], FactorioVersion(dep_split[2]), invert))
+
+        if "factorio_version" in info_json:
+            self.factorio_version_constraints.append(
+                FactorioVersionConstraint(
+                    "^", FactorioVersion(info_json["factorio_version"]), False))
 
         self.version = raw["version"]
         self.sha1 = raw["sha1"]
