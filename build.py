@@ -22,10 +22,7 @@ def build_dockerfile(sha256, version, tags):
 
 def pull_docker_tags(tags):
     for tag in tags:
-        try:
-            subprocess.check_call(["docker", "pull", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
-        except:
-            pass
+        subprocess.call(["docker", "pull", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
 
 def main(push_tags=False):
     with open(os.path.join(os.path.dirname(__file__), "buildinfo.json")) as file_handle:
@@ -36,16 +33,12 @@ def main(push_tags=False):
         tags = buildinfo["tags"]
         pull_docker_tags(tags)
         build_dockerfile(sha256, version, tags)
+
         if not push_tags:
             continue
-        for tag in tags:
-            try:
-                subprocess.run(["docker", "push", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"],
-                               check=True)
-            except subprocess.CalledProcessError:
-                print("Docker push failed")
-                exit(1)
 
+        for tag in tags:
+            subprocess.check_call(["docker", "push", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
 
 if __name__ == '__main__':
     push_tags = len(sys.argv) > 1 and sys.argv[1] == "--push-tags"
