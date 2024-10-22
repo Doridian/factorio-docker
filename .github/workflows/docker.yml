@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: write
       actions: write
+      packages: write
 
     steps:
       - name: Cancel Previous Runs
