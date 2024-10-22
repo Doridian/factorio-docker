@@ -17,11 +17,16 @@ def get_git_rev() -> str:
     return _git_rev
 
 def build_dockerfile(sha256, version, tags):
-    build_command = ["docker", "build",
-                     "--cache-from", "type=gha", "--cache-to", "type=gha",
-                     "--build-arg", f"GITREV={get_git_rev()}",
-                     "--build-arg", f"VERSION={version}",
-                     "--build-arg", f"SHA256={sha256}"]
+    build_command = [
+        "docker", "build",
+        "--cache-from", "type=gha", "--cache-to", "type=gha",
+        "--annotation", f"index,manifest,manifest-descriptor:factorio.version={version}",
+        "--annotation", f"index,manifest,manifest-descriptor:factorio.sha256={sha256}",
+        "--annotation", f"index,manifest,manifest-descriptor:factorio-docker.revision={get_git_rev()}",
+        "--build-arg", f"VERSION={version}",
+        "--build-arg", f"SHA256={sha256}",
+        "--build-arg", f"GITREV={get_git_rev()}",
+    ]
     for tag in tags:
         build_command += ["-t", f"{DOCKER_IMAGE_NAME}:{tag}"]
 
