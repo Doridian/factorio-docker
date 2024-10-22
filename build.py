@@ -32,6 +32,8 @@ def build_dockerfile(info, /, push_tags: bool) -> None:
 
     if push_tags:
         build_command.append("--push")
+    else:
+        build_command.append("--load")
 
     build_command.append(".")
 
