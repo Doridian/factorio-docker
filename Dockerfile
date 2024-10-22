@@ -1,5 +1,7 @@
 FROM debian:stable-slim
 
+LABEL org.opencontainers.image.source=https://github.com/Doridian/factorio-docker
+
 ARG USER=factorio
 ARG GROUP=factorio
 ARG PUID=845
@@ -66,3 +68,5 @@ COPY files/config.ini /opt/factorio/config/config.ini
 
 ARG GITREV=unknown
 LABEL factorio-docker.revision=${GITREV}
+
+LABEL org.opencontainers.image.description="factorio-docker/${GITREV} + Factorio/${VERSION}"
