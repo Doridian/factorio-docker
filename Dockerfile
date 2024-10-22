@@ -35,6 +35,9 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 ARG VERSION
 ARG SHA256
 
+LABEL factorio.version=${VERSION} \
+      factorio.sha256=${SHA256}
+
 ENV VERSION=${VERSION} \
     SHA256=${SHA256}
 
@@ -60,3 +63,6 @@ RUN set -ox pipefail \
     && chown -R "$USER":"$GROUP" /opt/factorio /factorio
 
 COPY files/config.ini /opt/factorio/config/config.ini
+
+ARG GITREV=unknown
+LABEL factorio-docker.revision=${GITREV}

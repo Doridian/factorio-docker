@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from subprocess import check_call
+from subprocess import check_call, check_output
 from argparse import ArgumentParser
 from os import path
 from buildinfo import version_to_buildinfo, BuildInfo
@@ -8,9 +8,18 @@ from ghcr import DOCKER_IMAGE_NAME, image_tag_exists, image_tag_equals
 
 BUILD_DIR = path.join(path.dirname(__file__))
 
+_git_rev = None
+def get_git_rev() -> str:
+    global _git_rev
+    if _git_rev is not None:
+        return _git_rev
+    _git_rev = check_output(["git", "rev-parse", "HEAD"], text=True, cwd=BUILD_DIR).strip()
+    return _git_rev
+
 def build_dockerfile(sha256, version, tags):
     build_command = ["docker", "build",
                      "--cache-from", "type=gha", "--cache-to", "type=gha",
+                     "--build-arg", f"GITREV={get_git_rev()}",
                      "--build-arg", f"VERSION={version}",
                      "--build-arg", f"SHA256={sha256}"]
     for tag in tags:
