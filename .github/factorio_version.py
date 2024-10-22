@@ -2,8 +2,20 @@
 
 from json import dumps, loads
 from subprocess import check_call
-from requests import get
 from hashlib import sha256
+from urllib.request import urlopen, Request
+
+def http_make_req(url: str):
+    return Request(url, headers={"User-Agent": "factorio_version.py (github.com/Doridian/factorio-docker)"})
+
+def http_get_bytes(url: str) -> bytes:
+    with urlopen(http_make_req(url)) as resp:
+        return resp.read()
+
+def http_get_str(url: str) -> str:
+    with urlopen(http_make_req(url)) as resp:
+        charset = resp.headers.get_content_charset("utf-8")
+        return resp.read().decode(charset)
 
 LOCAL_BUILDINFO = "./buildinfo.json"
 LATEST_VERSION_URL = "https://factorio.com/api/latest-releases"
@@ -11,9 +23,7 @@ LATEST_VERSION_URL = "https://factorio.com/api/latest-releases"
 with open(LOCAL_BUILDINFO, "r") as fh:
     current_buildinfo = loads(fh.read())
 
-with get(LATEST_VERSION_URL) as req:
-    req.raise_for_status()
-    latest_versions = loads(req.text)
+latest_versions = loads(http_get_str(LATEST_VERSION_URL))
 
 VERSION_LATEST = latest_versions["experimental"]["headless"]
 VERSION_STABLE = latest_versions["stable"]["headless"]
@@ -31,11 +41,12 @@ def version_to_buildinfo(version):
     if version in current_buildinfo:
         info_sha256 = current_buildinfo[version]["sha256"]
     else:
-        res = get(version_to_url(version))
-        res.raise_for_status()
+        print(f"Fetching {version} for SHA256")
+        res = http_get_bytes(version_to_url(version))
         h = sha256()
-        h.update(res.content)
+        h.update(res)
         info_sha256 = h.hexdigest()
+        print(f"SHA256: {info_sha256}")
 
     tags = [version]
     if version == VERSION_LATEST:

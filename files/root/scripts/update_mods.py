@@ -233,7 +233,11 @@ class FactorioMod():
         actual_hash = current_hash.hexdigest()
 
         if actual_hash != expected_hash:
-            raise ValueError("Hash mismatch")
+            try:
+                unlink(local_filename_tmp)
+            except:
+                pass
+            raise ValueError(f"Hash mismatch for {url} - expected {expected_hash}, got {actual_hash}")
 
         rename(local_filename_tmp, local_filename_target)
 
