@@ -3,14 +3,9 @@
 import os
 import json
 import subprocess
-import shutil
 import sys
-import tempfile
 
 def build_dockerfile(sha256, version, tags):
-    build_dir = tempfile.mktemp()
-    shutil.copytree("docker", build_dir)
-
     build_command = ["docker", "build",
                      "--cache-from", "type=gha", "--cache-to", "type=gha",
                      "--build-arg", f"VERSION={version}",
@@ -18,7 +13,7 @@ def build_dockerfile(sha256, version, tags):
     for tag in tags:
         build_command.extend(["-t", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
 
-    subprocess.check_call(build_command, cwd=build_dir)
+    subprocess.check_call(build_command)
 
 def pull_docker_tags(tags):
     for tag in tags:

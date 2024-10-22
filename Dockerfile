@@ -12,7 +12,7 @@ ENV PORT=34197 \
     MODS=/factorio/mods \
     SCENARIOS=/factorio/scenarios \
     SCRIPTOUTPUT=/factorio/script-output \
-    PUID="$PUID" \
+    `="$PUID" \
     PGID="$PGID"
 
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
@@ -25,7 +25,7 @@ RUN set -ox pipefail \
     && addgroup --system --gid "$PGID" "$GROUP" \
     && adduser --system --uid "$PUID" --gid "$PGID" --no-create-home --disabled-password --shell /bin/sh "$USER"
 
-COPY files/root /
+COPY root /
 
 VOLUME /factorio
 EXPOSE $PORT/udp $RCON_PORT/tcp
@@ -59,4 +59,4 @@ RUN set -ox pipefail \
     && mkdir -p /opt/factorio/config/ \
     && chown -R "$USER":"$GROUP" /opt/factorio /factorio
 
-COPY files/config.ini /opt/factorio/config/config.ini
+COPY config.ini /opt/factorio/config/config.ini

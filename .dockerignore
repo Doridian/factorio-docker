@@ -1,0 +1,8 @@
+.git
+.github
+/build.py
+/buildinfo.json
+docker-compose.yml
+docker-compose.*.yml
+/lint.sh
+renovate.json
