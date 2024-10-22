@@ -21,7 +21,7 @@ jobs:
           git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
       - name: Checkout
         uses: actions/checkout@v4
-      - run: ./.github/factorio_version.py
+      - run: ./buildinfo.py
         id: pyscript
       - name: Expose GitHub Runtime
         uses: crazy-max/ghaction-github-runtime@v3
