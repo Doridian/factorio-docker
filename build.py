@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
-import os
-import json
-import subprocess
-import sys
+from json import load as json_load
+from subprocess import check_call, call
+from argparse import ArgumentParser
+from os import path
+
+BUILD_DIR = path.join(path.dirname(__file__))
 
 def build_dockerfile(sha256, version, tags):
     build_command = ["docker", "build",
@@ -13,28 +15,29 @@ def build_dockerfile(sha256, version, tags):
     for tag in tags:
         build_command.extend(["-t", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
 
-    subprocess.check_call(build_command)
+    check_call(build_command, cwd=BUILD_DIR)
 
-def pull_docker_tags(tags):
-    for tag in tags:
-        subprocess.call(["docker", "pull", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
+def main() -> None:
+    parser = ArgumentParser()
+    parser.add_argument("--push-tags", action="store_true")
+    args = parser.parse_args()
 
-def main(push_tags=False):
-    with open(os.path.join(os.path.dirname(__file__), "buildinfo.json")) as file_handle:
-        builddata = json.load(file_handle)
+    with open(path.join(BUILD_DIR, "buildinfo.json")) as f:
+        builddata = json_load(f)
 
     for version, buildinfo in builddata.items():
         sha256 = buildinfo["sha256"]
         tags = buildinfo["tags"]
-        pull_docker_tags(tags)
+        for tag in tags:
+            call(["docker", "pull", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
         build_dockerfile(sha256, version, tags)
 
-        if not push_tags:
-            continue
+    if not args.push_tags:
+        return
 
+    for version, buildinfo in builddata.items():
         for tag in tags:
-            subprocess.check_call(["docker", "push", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
+            check_call(["docker", "push", f"ghcr.io/doridian/factorio-docker/factorio:{tag}"])
 
-if __name__ == '__main__':
-    push_tags = len(sys.argv) > 1 and sys.argv[1] == "--push-tags"
-    main(push_tags)
+if __name__ == "__main__":
+    main()
