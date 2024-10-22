@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from json import loads as json_loads
-from util import http_get_str, http_make_req
+from httputil import http_get_str, http_make_req
 from re import split as re_split
 from os import path
 from urllib.parse import urlparse
