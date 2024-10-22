@@ -18,7 +18,7 @@ def get_git_rev() -> str:
 
 def build_dockerfile(sha256, version, tags):
     build_command = [
-        "docker", "build",
+        "docker", "buildx", "build",
         "--cache-from", "type=gha", "--cache-to", "type=gha",
         "--annotation", f"index,manifest,manifest-descriptor:factorio.version={version}",
         "--annotation", f"index,manifest,manifest-descriptor:factorio.sha256={sha256}",
