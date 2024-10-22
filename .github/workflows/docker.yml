@@ -62,5 +62,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          ./build.py --cron --push-tags
+          ./build.py --only-new --push-tags
         if: ${{ github.event_name == 'schedule' }}
