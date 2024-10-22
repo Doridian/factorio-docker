@@ -25,7 +25,7 @@ RUN set -ox pipefail \
     && addgroup --system --gid "$PGID" "$GROUP" \
     && adduser --system --uid "$PUID" --gid "$PGID" --no-create-home --disabled-password --shell /bin/sh "$USER"
 
-COPY root /
+COPY files/root /
 
 VOLUME /factorio
 EXPOSE $PORT/udp $RCON_PORT/tcp
@@ -59,4 +59,4 @@ RUN set -ox pipefail \
     && mkdir -p /opt/factorio/config/ \
     && chown -R "$USER":"$GROUP" /opt/factorio /factorio
 
-COPY config.ini /opt/factorio/config/config.ini
+COPY files/config.ini /opt/factorio/config/config.ini
