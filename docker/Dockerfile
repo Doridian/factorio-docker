@@ -1,7 +1,5 @@
 FROM debian:stable-slim
 
-LABEL maintainer="https://github.com/Doridian/factorio-docker"
-
 ARG USER=factorio
 ARG GROUP=factorio
 ARG PUID=845
@@ -22,10 +20,16 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 RUN set -ox pipefail \
     && mkdir -p /opt /factorio \
     && apt-get -q update \
-    && apt-get -qy install binutils curl file gettext jq pwgen xz-utils python3 python3-dateutil python3-requests \
+    && apt-get --no-install-recommends -qy install binutils curl file gettext jq pwgen xz-utils python3 python3-dateutil python3-requests \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --system --gid "$PGID" "$GROUP" \
     && adduser --system --uid "$PUID" --gid "$PGID" --no-create-home --disabled-password --shell /bin/sh "$USER"
+
+COPY files/root /
+
+VOLUME /factorio
+EXPOSE $PORT/udp $RCON_PORT/tcp
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # version checksum of the archive to download
 ARG VERSION
@@ -56,9 +60,3 @@ RUN set -ox pipefail \
     && chown -R "$USER":"$GROUP" /opt/factorio /factorio
 
 COPY files/config.ini /opt/factorio/config/config.ini
-
-COPY files/root /
-
-VOLUME /factorio
-EXPOSE $PORT/udp $RCON_PORT/tcp
-ENTRYPOINT ["/docker-entrypoint.sh"]
