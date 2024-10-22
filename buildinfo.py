@@ -84,7 +84,8 @@ def version_to_buildinfo(version: str):
 
     version_split = version.split(".")
     for i in range(1, len(version_split)):
-        tags.append(f"{".".join(version_split[:i])}.x")
+        f_version = ".".join(version_split[:i])
+        tags.append(f"{f_version}.x")
 
 
     return BuildInfo(
