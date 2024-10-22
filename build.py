@@ -16,19 +16,22 @@ def get_git_rev() -> str:
     _git_rev = check_output(["git", "rev-parse", "HEAD"], text=True, cwd=BUILD_DIR).strip()
     return _git_rev
 
-def build_dockerfile(sha256, version, tags):
+def build_dockerfile(info, /, push_tags: bool) -> None:
     build_command = [
         "docker", "buildx", "build",
         "--cache-from", "type=gha", "--cache-to", "type=gha",
-        "--annotation", f"index,manifest,manifest-descriptor:factorio.version={version}",
-        "--annotation", f"index,manifest,manifest-descriptor:factorio.sha256={sha256}",
+        "--annotation", f"index,manifest,manifest-descriptor:factorio.version={info.version}",
+        "--annotation", f"index,manifest,manifest-descriptor:factorio.sha256={info.sha256}",
         "--annotation", f"index,manifest,manifest-descriptor:factorio-docker.revision={get_git_rev()}",
-        "--build-arg", f"VERSION={version}",
-        "--build-arg", f"SHA256={sha256}",
+        "--build-arg", f"VERSION={info.version}",
+        "--build-arg", f"SHA256={info.sha256}",
         "--build-arg", f"GITREV={get_git_rev()}",
     ]
-    for tag in tags:
+    for tag in info.tags:
         build_command += ["-t", f"{DOCKER_IMAGE_NAME}:{tag}"]
+
+    if push_tags:
+        build_command.append("--push")
 
     build_command.append(".")
 
@@ -83,14 +86,7 @@ def main() -> None:
                 print(f"Skipping all builds for {info.version} because it already exists and special tags match")
                 continue
 
-        build_dockerfile(info.sha256, info.version, info.tags)
-
-    if not args.push_tags:
-        return
-
-    for info in builddata:
-        for tag in info.tags:
-            check_call(["docker", "push", f"{DOCKER_IMAGE_NAME}:{tag}"])
+        build_dockerfile(info, push_tags=args.push_tags)
 
 if __name__ == "__main__":
     main()
