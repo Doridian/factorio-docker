@@ -55,6 +55,26 @@ class BuildInfo:
     version: str
     url: str
 
+
+def _try_find_version_filename(version: str) -> str:
+    static_tries = [
+        f"factorio_headless_x64_{version}.tar.xz",
+        f"factorio-headless_linux_{version}.tar.xz",
+    ]
+
+    for filename in static_tries:
+        if filename in SHA256SUMS:
+            return filename
+
+    for candidate in SHA256SUMS.keys():
+        if "headless" not in candidate:
+            continue
+        if not candidate.endswith(f"_{version}.tar.xz"):
+            continue
+        return candidate
+
+    return ""
+
 def version_to_buildinfo(version: str):
     fetch_special_versions()
     fetch_sha256sums()
@@ -69,11 +89,13 @@ def version_to_buildinfo(version: str):
     if version in _version_filenames:
         filename = _version_filenames[version]
     else:
-        with http_make_req(url, follow_redirects=False) as resp:
-            file_url = resp.headers["location"]
+        filename = _try_find_version_filename(version)
+        if (not filename) or (filename not in SHA256SUMS):
+            with http_make_req(url, follow_redirects=False) as resp:
+                file_url = resp.headers["location"]
 
-        parsed_url = urlparse(file_url)
-        filename = path.basename(parsed_url.path)
+            parsed_url = urlparse(file_url)
+            filename = path.basename(parsed_url.path)
         _version_filenames[version] = filename
 
     tags = [version]

@@ -66,7 +66,7 @@ def main() -> None:
                 break
 
             if not special_tag_needed:
-                print(f"Skipping all builds for {info.version} because it already exists")
+                print(f"Skipping all builds for {info.version} because it already exists and special tags match")
                 continue
 
         build_dockerfile(info.sha256, info.version, info.tags)
