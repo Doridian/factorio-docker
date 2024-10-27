@@ -268,6 +268,10 @@ def check_mod(mod: FactorioMod):
     mod.fetch_info()
     release = mod.get_latest_version_for(FACTORIO_VERSION)
 
+    if not release:
+        myprint(f"    Ignoring {mod.name}, no usable release found")
+        return
+
     if mod.is_release_installed(release):
         myprint(f"    Mod {mod.name} up to date at {release.version}!")
     else:
