@@ -50,7 +50,6 @@ def main() -> None:
     if not args.versions:
         versions_to_build.add("latest")
         versions_to_build.add("stable")
-        versions_to_build.add("1.1.110")
     else:
         for version in args.versions:
             versions_to_build.add(version.lower().strip())

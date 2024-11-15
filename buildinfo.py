@@ -24,11 +24,6 @@ def fetch_special_versions():
     VERSION_LATEST = latest_versions["experimental"]["headless"]
     VERSION_STABLE = latest_versions["stable"]["headless"]
     _special_versions_fetched = True
-    #VERSIONS_BUILDINFO = set([
-    #    VERSION_LATEST,
-    #    VERSION_STABLE,
-    #    "1.1.110",
-    #])
 
 SHA256SUMS = None
 def fetch_sha256sums():

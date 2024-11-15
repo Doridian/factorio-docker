@@ -11,7 +11,6 @@ from re import search
 from signal import signal, SIGHUP, SIGTERM, SIGINT
 from traceback import print_exc
 from handlers.base import ConsoleLineHandler, ChatHandler, ChatPlayer
-from handlers.autopause import AutoPauseHandler
 from handlers.chat_commands import ChatCommandHandler
 from handlers.commands.saves import LoadSaveCommand, ListSavesCommand
 from handlers.commands.restart import RestartCommand, StopCommand
@@ -156,15 +155,9 @@ def cli_restart_handler(game):
 
 
 def main():
-    pause_env_var = getenv("PAUSE_DURING_JOIN", "false").lower()
-    pause_during_join = len(pause_env_var) > 0 and pause_env_var != "false"
-
     suexec()
     game = FactorioGame(
         args=argv[1:], restart_handler=cli_restart_handler, cmdin=stdin)
-
-    if pause_during_join:
-        game.console_line_handlers.append(AutoPauseHandler(game))
 
     command_handler = ChatCommandHandler(game)
     command_handler.register_command(LoadSaveCommand())

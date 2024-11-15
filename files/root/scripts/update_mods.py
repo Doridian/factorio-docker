@@ -242,10 +242,10 @@ class FactorioMod():
         rename(local_filename_tmp, local_filename_target)
 
 
-FACTORIO_VERSION = FactorioVersion(argv[1])
-MOD_DIR = argv[2]
-USERNAME = argv[3]
-TOKEN = argv[4]
+FACTORIO_VERSION = None
+MOD_DIR = None
+USERNAME = None
+TOKEN = None
 
 MOD_BASE_URL = "https://mods.factorio.com"
 
@@ -281,6 +281,12 @@ def check_mod(mod: FactorioMod):
 
 
 def main():
+    global FACTORIO_VERSION, MOD_DIR, USERNAME, TOKEN
+    FACTORIO_VERSION = FactorioVersion(argv[1])
+    MOD_DIR = argv[2]
+    USERNAME = argv[3]
+    TOKEN = argv[4]
+
     myprint("Loading mod-list.json")
     all_mods = []
     with open(f"{MOD_DIR}/mod-list.json") as f:
