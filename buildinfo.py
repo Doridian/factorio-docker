@@ -102,7 +102,10 @@ def version_to_buildinfo(version: str):
     version_split = version.split(".")
     for i in range(1, len(version_split)):
         f_version = ".".join(version_split[:i])
-        tags.append(f"{f_version}.x")
+        if version == VERSION_STABLE:
+            tags.append(f"stable-{f_version}.x")
+        if version == VERSION_LATEST:
+            tags.append(f"latest-{f_version}.x")
 
 
     return BuildInfo(
